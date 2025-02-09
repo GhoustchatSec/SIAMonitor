@@ -1,0 +1,9 @@
+# .gitignore settings
+# Ignore all .log files
+*.log
+
+# Ignore .venv
+.venv/
+
+# Ignore IDE proj
+.idea/
