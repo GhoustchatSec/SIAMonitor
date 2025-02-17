@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        function deleteAll() {
+            alert('Все данные удалены!');
+        }
+        
+        function resetPassword() {
+            const email = prompt('Введите email пользователя для сброса пароля:');
+            if (email) {
+                alert(`Пароль для ${email} сброшен!`);
+            }
+        }
+        
+        function blockUser() {
+            const email = prompt('Введите email пользователя для блокировки:');
+            if (email) {
+                alert(`Пользователь ${email} заблокирован!`);
+            }
+        }
+        
+        function deleteUser() {
+            const email = prompt('Введите email пользователя для удаления:');
+            if (email) {
+                alert(`Пользователь ${email} удален!`);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Админ Панель</h1>
+        <button onclick="deleteAll()">Удалить все</button>
+        <button onclick="resetPassword()">Сброс пароля для пользователя</button>
+        <button onclick="blockUser()">Блокировка пользователя</button>
+        <button onclick="deleteUser()">Удаление пользователя</button>
+    </div>
+</body>
+</html>

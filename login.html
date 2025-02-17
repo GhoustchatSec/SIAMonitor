@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        function login() {
+            const role = document.querySelector('input[name="role"]:checked');
+            if (role) {
+                localStorage.setItem('role', role.value);
+                location.href = 'lk.html';
+            } else {
+                alert("Выберите роль перед входом!");
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Вход</h1>
+        <label>
+            <input type="radio" name="role" value="student"> Студент
+        </label>
+        <label>
+            <input type="radio" name="role" value="teacher"> Преподаватель
+        </label>
+        <div>
+            <input type="text" placeholder="Email">
+            <input type="password" placeholder="Пароль">
+        </div>
+        <button onclick="login()">Войти</button>
+        <button onclick="location.href='reset_password.html'" class="reset-button">Забыли пароль?</button>
+    </div>
+</body>
+</html>

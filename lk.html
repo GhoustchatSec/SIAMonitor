@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        function checkUserRole() {
+            const userRole = localStorage.getItem('role');
+            if (userRole !== 'student') {
+                document.getElementById('teamCard').style.display = 'none';
+            }
+        }
+
+        function updateParticipants() {
+            const count = document.getElementById('participantCount').value;
+            const container = document.getElementById('participantsContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const div = document.createElement('div');
+                div.classList.add('participant-entry');
+                
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.placeholder = `Имя участника ${i + 1}`;
+                
+                const emailInput = document.createElement('input');
+                emailInput.type = 'text';
+                emailInput.placeholder = `Email участника ${i + 1}`;
+                
+                div.appendChild(nameInput);
+                div.appendChild(emailInput);
+                container.appendChild(div);
+            }
+        }
+    </script>
+</head>
+<body onload="checkUserRole()">
+    <div class="container">
+        <h1>Личный кабинет</h1>
+        <p>Добро пожаловать в ваш личный кабинет!</p>
+        
+        <div id="teamCard" class="team-card">
+            <h2>Создание команды</h2>
+            <input type="text" placeholder="Название проекта">
+            <input type="number" id="participantCount" placeholder="Количество участников" oninput="updateParticipants()">
+            <div id="participantsContainer"></div>
+            <input type="text" placeholder="Ссылка на Git">
+            <input type="text" placeholder="Ссылка на багтрекер">
+            <textarea placeholder="Описание проекта"></textarea>
+            <textarea placeholder="Килл-фича проекта"></textarea>
+            <button>Создать команду</button>
+        </div>
+        
+        <button onclick="location.href='index.html'">Выйти</button>
+    </div>
+</body>
+</html>

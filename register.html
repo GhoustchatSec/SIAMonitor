@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        function toggleRegisterFields(role) {
+            document.getElementById('registerFields').classList.remove('hidden');
+            if (role === 'student') {
+                document.getElementById('groupNumber').classList.remove('hidden');
+                document.getElementById('teamLead').classList.remove('hidden');
+            } else {
+                document.getElementById('groupNumber').classList.add('hidden');
+                document.getElementById('teamLead').classList.add('hidden');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Регистрация</h1>
+        <label>
+            <input type="radio" name="role" onclick="toggleRegisterFields('student')"> Студент
+        </label>
+        <label>
+            <input type="radio" name="role" onclick="toggleRegisterFields('teacher')"> Преподаватель
+        </label>
+        <div id="registerFields" class="hidden">
+            <input type="text" placeholder="Email">
+            <input type="password" placeholder="Пароль">
+            <div id="groupNumber" class="hidden">
+                <input type="text" placeholder="Номер группы">
+            </div>
+            <div id="teamLead" class="hidden">
+                <label>
+                    <input type="checkbox"> Тимлид
+                </label>
+            </div>
+            <button onclick="location.href='lk.html'">Зарегистрироваться</button>
+        </div>
+    </div>
+</body>
+</html>
