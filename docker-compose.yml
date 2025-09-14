@@ -1,0 +1,77 @@
+services:
+  db:
+    image: postgres:16
+    container_name: siam_pg
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks: [siam_net]
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: siam_keycloak
+    command: >
+      start
+      --hostname=${PUBLIC_HOST}
+      --http-enabled=true
+      --http-port=8080
+      --http-relative-path=/auth
+      --hostname-strict=false
+      --proxy-headers xforwarded
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/${KEYCLOAK_DB}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    depends_on: [db]
+    networks: [siam_net]
+
+  backend:
+    build: ./backend
+    container_name: siam_backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://$POSTGRES_USER:$POSTGRES_PASSWORD@db:5432/$POSTGRES_DB
+      # для проверки JWT переменные keycloak (realm, issuer и ...)
+      KC_REALM: ${KC_REALM}
+      KC_FRONTEND_CLIENT_ID: ${KC_FRONTEND_CLIENT_ID}
+      KC_BACKEND_AUDIENCE: ${KC_BACKEND_AUDIENCE}
+      KC_ISSUER: ${KC_ISSUER}
+      KC_JWKS_URL: ${KC_JWKS_URL}
+
+      # Доверять самоподписанному сертификату при запросах к https://<IP>/auth
+      SSL_CERT_FILE: /etc/ssl/dev/dev.crt
+      REQUESTS_CA_BUNDLE: /etc/ssl/dev/devCA.crt
+    volumes:
+      - ${DEV_SSL_CERT_HOST}:/etc/ssl/dev/dev.crt:ro
+      - ./backend/uploads:/app/uploads
+    depends_on: [db]
+    networks: [siam_net]
+
+  frontend:
+    build: ./frontend
+    container_name: siam_frontend
+    depends_on: [backend]
+    networks: [siam_net]
+
+  nginx:
+    build: ./nginx
+    container_name: siam_nginx
+    ports:
+      - "${HTTP_PORT}:80"
+      - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+    depends_on: [frontend, backend, keycloak]
+    networks: [siam_net]
+
+networks:
+  siam_net:
+
+volumes:
+  pgdata:
+
