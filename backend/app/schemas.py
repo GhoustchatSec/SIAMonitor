@@ -1,30 +1,32 @@
-from pydantic import BaseModel, Field, constr
-from typing import Optional, List
+from pydantic import BaseModel, Field, constr, conint
+from typing import Optional, List, Literal
+from datetime import datetime
 
-
+# --- профили ---
 class ProfileUpdate(BaseModel):
-    mode: Optional[constr(pattern="^(participant|lead)$")] = None
-    full_name: Optional[str] = None
-    group_no: Optional[str] = None
-    email_corp: Optional[str] = None
-    tg: Optional[str] = None
+    mode: Optional[Literal["participant", "lead"]] = None  # учителю игнорируется
+    group_no: Optional[str] = Field(default=None, max_length=64)
+    tg: Optional[str] = Field(default=None, max_length=128)
 
 class ProfileOut(BaseModel):
     sub: str
-    mode: str
-    full_name: Optional[str] = None
-    group_no: Optional[str] = None
-    email_corp: Optional[str] = None
-    tg: Optional[str] = None
-    class Config: from_attributes = True
+    username: Optional[str] = None
+    full_name: Optional[str] = None   # берём из KC/БД, только вывод
+    email: Optional[str] = None       # берём из KC/БД, только вывод
+    mode: Optional[Literal["participant", "lead", "teacher"]] = None
+    group_no: Optional[str] = None    # редактирует только студент
+    tg: Optional[str] = None          # редактируют все
 
+    class Config:
+        from_attributes = True
 
+# --- проекты ---
 class ProjectCreate(BaseModel):
     name: str
     description: Optional[constr(max_length=3000)] = None
     repo_url: Optional[str] = None
     tracker_url: Optional[str] = None
-    mobile_repo_url: Optional[str] = None 
+    mobile_repo_url: Optional[str] = None  # проверим на бэке, если 5 участников
 
 class ProjectOut(BaseModel):
     id: int
@@ -47,19 +49,24 @@ class MemberOut(BaseModel):
     role_in_team: Optional[str] = None
     class Config: from_attributes = True
 
-
+# --- майлстоуны ---
 class MilestoneCreate(BaseModel):
     title: str
-    deadline: Optional[str] = None 
+    deadline: Optional[str] = None  # YYYY-MM-DD
 
 class MilestoneOut(BaseModel):
     id: int
     title: str
-    created_at: Optional[str] = None
+    created_at: datetime | None = None
     deadline: Optional[str] = None
     class Config: from_attributes = True
 
+class MilestoneIn(BaseModel):
+    # Ввод с фронта для создания майлстоуна
+    title: str = Field(..., min_length=1, max_length=200)
+    deadline: Optional[str] = None  # ожидаем 'YYYY-MM-DD' или None
 
+# --- оценки по майлстоуну ---
 class GradeSet(BaseModel):
     grade: int = Field(ge=0, le=5)
 
@@ -69,4 +76,21 @@ class GradeOut(BaseModel):
     grade: Optional[int] = None
     presentation_path: Optional[str] = None
     report_path: Optional[str] = None
+    graded_by_sub: Optional[str] = None
+    graded_at: Optional[datetime] = None
 
+class RatingRowOut(BaseModel):
+    project_id: int
+    project_name: str
+    team_size: int
+    avg_grade: Optional[float] = None
+    grades: List[int] = []
+
+class SuggestOut(BaseModel):
+    score: int  # 0..5
+    commits: int
+    lines_changed: int
+    details: str
+
+class GradeIn(BaseModel):
+    grade: conint(ge=0, le=5)

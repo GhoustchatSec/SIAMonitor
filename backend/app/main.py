@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from .db import Base, engine
-from . import models  
-from .deps import get_current_user, require_teacher, require_student  
+from . import models  # важно, чтобы таблицы зарегистрировались
+from .deps import get_current_user, require_teacher, require_student  # если нужно в /api/me
 from .routes import router as api_router
 
 app = FastAPI(title="SIAMonitor API")

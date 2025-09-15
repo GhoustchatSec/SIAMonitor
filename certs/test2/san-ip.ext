@@ -1,0 +1,6 @@
+basicConstraints=critical,CA:FALSE
+keyUsage=critical,digitalSignature,keyEncipherment
+extendedKeyUsage=serverAuth
+subjectAltName=IP:147.45.109.17
+authorityKeyIdentifier=keyid,issuer
+subjectKeyIdentifier=hash

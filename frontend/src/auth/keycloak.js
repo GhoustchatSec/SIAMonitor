@@ -33,7 +33,7 @@ export function initKeycloak(onReady, { initTimeoutMs = 4000 } = {}) {
     }, 30000)
   })
   .catch(() => {
-    
+    // не блокируем UI, просто считаем, что не авторизован
     onReady(keycloak, false)
   })
 }

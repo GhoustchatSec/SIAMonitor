@@ -12,7 +12,7 @@ export default function ProjectPage() {
   const [project, setProject] = useState(null)
   const [members, setMembers] = useState([])
   const [milestones, setMilestones] = useState([])
-  const [state, setState] = useState([]) 
+  const [state, setState] = useState([]) // grades/files per milestone
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState('')
 
@@ -71,7 +71,7 @@ export default function ProjectPage() {
   if (loading) return <div>Загрузка…</div>
   if (err) return <div style={{color:'red'}}>{String(err)}</div>
 
-  
+  // Нет id и нет проекта — если это lead: форма создания
   if (!projectId) {
     return (
       <div>
@@ -106,7 +106,12 @@ export default function ProjectPage() {
 
       <h3 style={{marginTop:16}}>Участники ({teamCount}/5)</h3>
       <ul>
-        {members.map(m => <li key={m.id}>{m.member_sub}{m.role_in_team ? ` (${m.role_in_team})` : ''}</li>)}
+        {members.map(m => (
+          <li key={m.id}>
+            {m.full_name ? `${m.full_name}` : m.member_sub}
+            {m.role_in_team ? ` (${m.role_in_team})` : ''}
+          </li>
+        ))}
       </ul>
       {isLeadHere && (
         <form onSubmit={addMember} style={{display:'flex', gap:6, flexWrap:'wrap'}}>
@@ -139,13 +144,24 @@ export default function ProjectPage() {
                   <td style={td}>{ms.deadline || '—'}</td>
                   <td style={td} title="оценка выставляется преподавателем">{st.grade ?? '—'}</td>
                   <td style={td}>
-                    {st.presentation_path ? <div><a href="#" onClick={(e)=>e.preventDefault()}>Презентация</a></div> : <div>—</div>}
-                    {st.report_path ? <div><a href="#" onClick={(e)=>e.preventDefault()}>Отчёт</a></div> : <div>—</div>}
+                    {st.presentation_path
+                      ? <div><a href={`/api/files/${projectId}/${ms.id}/presentation`} target="_blank" rel="noreferrer">Презентация</a></div>
+                      : <div>—</div>}
+                    {st.report_path
+                      ? <div><a href={`/api/files/${projectId}/${ms.id}/report`} target="_blank" rel="noreferrer">Отчёт</a></div>
+                      : <div>—</div>}
                   </td>
                   {isTeacher && (
                     <td style={td}>
-                      <GradeSetter milestoneId={ms.id} onSet={(g)=>setGrade(ms.id, g)}/>
-                      {/* Кнопку "получить предложение по оценке" добавим (GitHub API) */}
+                      <GradeSetter milestoneId={ms.id} onSet={(g)=>setGrade(ms.id, g)} />
+                      <button style={{marginLeft:8}} onClick={async ()=>{
+                        try{
+                          const r = await apiPost(`/api/projects/${projectId}/milestones/${ms.id}/suggest`, {})
+                          alert(`Предложение: ${r.score} (commits: ${r.commits}, lines: ${r.lines_changed})`)
+                        }catch(e){ alert(e.message) }
+                      }}>
+                        Предложить оценку
+                      </button>
                     </td>
                   )}
                   <td style={td}>

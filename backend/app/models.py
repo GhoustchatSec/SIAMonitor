@@ -2,13 +2,14 @@ from sqlalchemy import String, Text, Integer, DateTime, ForeignKey, func, Unique
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .db import Base
 
-
+# --- Пользовательский профиль для ЛК ---
 class UserProfile(Base):
     __tablename__ = "user_profiles"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     sub: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     username: Mapped[str | None] = mapped_column(String(128))
     email: Mapped[str | None] = mapped_column(String(256))
+    # ЛК по ТЗ
     mode: Mapped[str] = mapped_column(String(16), default="participant") # participant|lead
     full_name: Mapped[str | None] = mapped_column(String(256))
     group_no: Mapped[str | None] = mapped_column(String(64))
@@ -17,24 +18,24 @@ class UserProfile(Base):
     avatar_path: Mapped[str | None] = mapped_column(String(512))
     created_at: Mapped["DateTime"] = mapped_column(DateTime, server_default=func.now())
 
-
+# --- Глобальные майлстоуны (общие для всех проектов) ---
 class Milestone(Base):
     __tablename__ = "milestones"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(200))
     created_at: Mapped["DateTime"] = mapped_column(DateTime, server_default=func.now())
-    deadline: Mapped[str | None] = mapped_column(String(32)) 
+    deadline: Mapped[str | None] = mapped_column(String(32)) # YYYY-MM-DD
 
-
+# --- Проект (один lead, до 5 участников всего) ---
 class Project(Base):
     __tablename__ = "projects"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(200))
-    description: Mapped[str | None] = mapped_column(Text)     
+    description: Mapped[str | None] = mapped_column(Text)      # проверим длину в схеме
     repo_url: Mapped[str | None] = mapped_column(String(300))
     tracker_url: Mapped[str | None] = mapped_column(String(300))
     mobile_repo_url: Mapped[str | None] = mapped_column(String(300))
-    lead_sub: Mapped[str] = mapped_column(String(64), index=True) 
+    lead_sub: Mapped[str] = mapped_column(String(64), index=True)  # sub тим-лида
     created_at: Mapped["DateTime"] = mapped_column(DateTime, server_default=func.now())
 
     members: Mapped[list["TeamMember"]] = relationship(back_populates="project", cascade="all, delete-orphan")
@@ -53,7 +54,7 @@ class TeamMember(Base):
         UniqueConstraint("project_id", "member_sub", name="uq_project_member"),
     )
 
-
+# --- Оценка/файлы проекта по майлстоуну ---
 class ProjectMilestoneGrade(Base):
     __tablename__ = "project_milestone_grades"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

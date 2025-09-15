@@ -5,12 +5,14 @@ import Home from './components/Home.jsx'
 import Profile from './components/Profile.jsx'
 import ProjectPage from './components/ProjectPage.jsx'
 import Rating from './components/Rating.jsx'
+import MilestonePublishBar from './components/MilestonePublishBar.jsx'
 
 export default function App() {
   const [ready, setReady] = useState(false)
   const [authed, setAuthed] = useState(false)
   const [route, setRoute] = useState(currentRoute())
   const [me, setMe] = useState(null)
+  const [showPublish, setShowPublish] = useState(false)
 
   useEffect(() => {
     initKeycloak((kc, authenticated) => {
@@ -42,11 +44,23 @@ export default function App() {
           {authed && <a href="#/">Проекты</a>}
           {authed && <a href="#/profile">ЛК</a>}
           {authed && isTeacher && <a href="#/rating">Рейтинг</a>}
+          {authed && isTeacher && (
+            <button onClick={()=>setShowPublish(v=>!v)} style={{cursor:'pointer'}}>
+              {showPublish ? 'Скрыть публикацию' : 'Опубликовать майлстоун'}
+            </button>
+          )}
         </nav>
         <div>
           {authed ? <button onClick={kcLogout}>Выйти</button> : <button onClick={kcLogin}>Войти</button>}
         </div>
       </header>
+
+      {authed && isTeacher && showPublish && (
+        <MilestonePublishBar onPublished={()=>{
+          // опционально: можно пробросить событие, чтобы в нужных экранах перезагрузить данные
+           // window.dispatchEvent(new Event('milestones:changed'))
+        }}/>
+      )}
 
       {authed ? (
         <>

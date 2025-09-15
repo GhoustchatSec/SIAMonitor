@@ -42,6 +42,7 @@ services:
       KC_BACKEND_AUDIENCE: ${KC_BACKEND_AUDIENCE}
       KC_ISSUER: ${KC_ISSUER}
       KC_JWKS_URL: ${KC_JWKS_URL}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
 
       # Доверять самоподписанному сертификату при запросах к https://<IP>/auth
       SSL_CERT_FILE: /etc/ssl/dev/dev.crt
