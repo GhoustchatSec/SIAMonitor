@@ -45,8 +45,10 @@ class MemberAdd(BaseModel):
 class MemberOut(BaseModel):
     id: int
     project_id: int
-    member_sub: str
     role_in_team: Optional[str] = None
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    group_no: Optional[str] = None
     class Config: from_attributes = True
 
 # --- майлстоуны ---

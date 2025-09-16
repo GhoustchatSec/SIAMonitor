@@ -84,11 +84,22 @@ def update_profile(payload: ProfileUpdate, db: Session = Depends(get_db), user=D
 
     # Режим аккаунта: учителю запрещено менять;
     # студент может participant/lead (при lead — вычищаем членства)
-    if not is_teacher and payload.mode in ("participant", "lead"):
-        if payload.mode != prof.mode:
-            if payload.mode == "lead":
-                db.query(TeamMember).filter(TeamMember.member_sub == sub).delete()
-            prof.mode = payload.mode
+    if not is_teacher and payload.mode is not None:
+        new_mode = payload.mode
+
+        # уже лидер — любые попытки уйти из lead запрещаем
+        if (prof.mode == "lead") and (new_mode != "lead"):
+            raise HTTPException(400, "Mode is locked: cannot switch from lead to participant")
+
+        # переход participant/None -> lead (одноразовый)
+        if (prof.mode != "lead") and (new_mode == "lead"):
+            # при переходе в lead очищаем членства (по ТЗ)
+            db.query(TeamMember).filter(TeamMember.member_sub == sub).delete()
+            prof.mode = "lead"
+
+        # явная фиксация participant допустима только пока ещё не lead
+        elif (prof.mode != "lead") and (new_mode == "participant"):
+            prof.mode = "participant"
 
     # Редактируемые поля
     if not is_teacher and payload.group_no is not None:
@@ -186,9 +197,10 @@ def add_member(project_id: int, payload: MemberAdd, db: Session = Depends(get_db
     return {
         "id": m.id,
         "project_id": m.project_id,
-        "member_sub": m.member_sub,
         "role_in_team": m.role_in_team,
-        "full_name": prof.full_name or prof.username or prof.email
+        "full_name": prof.full_name or prof.username or prof.email,
+        "email": prof.email,
+        "group_no": prof.group_no,
     }
 
 @router.get("/projects/{project_id}/members", response_model=list[MemberOut])

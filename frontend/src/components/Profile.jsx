@@ -75,15 +75,41 @@ export default function Profile() {
               <select
                 style={{ ...input, appearance: 'auto' }}
                 value={mode}
-                onChange={e => setMode(e.target.value)}
-                onBlur={() => save({ mode })}
-                onKeyDown={e => { if (e.key === 'Enter') save({ mode }) }}
-              >
-                <option value="participant">participant</option>
-                <option value="lead">lead</option>
-              </select>
-            </div>
-
+                disabled={me.mode === 'lead'}          // ← после lead селект заблокирован
+                onChange={async (e) => {
+                  const next = e.target.value
+                  // если ещё не lead и хотим стать lead — спросим подтверждение
+                  if (me.mode !== 'lead' && next === 'lead') {
+                    const ok = window.confirm(
+                      'Внимание! Переход в режим тим-лида необратим. ' +
+                      'Вы не сможете вернуться в режим участника. Продолжить?'
+                    )
+                    if (!ok) {
+                      // откатываем визуальное значение
+                      e.target.value = mode
+                      return
+                    }
+                  }
+                  setMode(next)
+                  try {
+                    await save({ mode: next })  // сохранение на бэкенд
+                  } catch (e) {
+                    // на случай 400 от бэка при попытке выйти из lead
+                    alert('Не удалось изменить режим: ' + (e?.message || 'ошибка'))
+                    // вернуть текущее серверное значение
+                    setMode(me.mode || 'participant')
+                  }
+               }}
+             >
+               <option value="participant">participant</option>
+               <option value="lead">lead</option>
+             </select>
+             {me.mode === 'lead' && (
+               <div style={{fontSize:12, marginTop:6, opacity:0.8}}>
+                 Режим «lead» зафиксирован. Возврат к «participant» недоступен.
+               </div>
+             )}
+          </div>
             <div style={label}>
               <span>Номер группы</span>
               <input
